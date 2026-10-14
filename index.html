@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAPSULE QUEST - JRPG Gashapon Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/part1.css">
+  <link rel="stylesheet" href="css/part2.css">
+</head>
+<body>
+<div class="crt-overlay"></div>
+<div id="titleScreen" class="screen active">
+  <div class="title-logo">CAPSULE<br>QUEST</div>
+  <div class="title-sub">- JRPG GASHAPON SIMULATOR -</div>
+  <div><div class="input-label">ENTER YOUR NAME</div><input type="text" class="name-input" id="nameInput" maxlength="10" placeholder="HERO..." autocomplete="off"></div>
+  <button class="btn btn-s" id="startBtn">INSERT COIN</button>
+</div>
+<div id="gameScreen" class="screen">
+  <div class="hud">
+    <div class="hud-name" id="hudName">PLAYER</div>
+    <div class="hud-coins">&#x1FA99; <span id="coinCount">1000</span></div>
+    <div class="hud-pity" id="hudPity"></div>
+    <div class="hud-btns"><button class="btn btn-g" id="collBtn" style="font-size:0.575em;padding:8px 14px">COLLECTION</button><button class="btn btn-s" id="towerBtn" style="font-size:0.575em;padding:8px 14px">TOWER</button><button class="btn btn-s" id="resetBtn" style="font-size:0.575em;padding:8px 14px">RESET</button></div>
+  </div>
+  <div class="machine-wrap"><div class="machine">
+    <div class="globe" id="globe"><div class="globe-poster"></div><div class="globe-shine"></div><div id="capsulesContainer"></div></div>
+    <div class="machine-body"><div class="knob-wrap"><div class="knob" id="crank"><div class="crank-arm"></div></div></div><div class="coin-slot" id="coinSlot"><div class="yen-coin" id="yenCoin"></div></div><div class="dispenser" id="dispenser"><div class="dispenser-flap"></div><div class="drop-capsule" id="dropCapsule"></div></div></div>
+  </div></div>
+  <div class="pull-btns"><button class="btn btn-w" id="pull1Btn">PULL x1 (100)</button><button class="btn btn-w" id="pull10Btn">PULL x10 (900)</button></div>
+</div>
+<div id="collectionScreen" class="screen">
+  <div class="coll-header"><div class="coll-title">COLLECTION</div><div class="coll-stats" id="collStats">0 / 58</div><button class="btn btn-g" id="backBtn" style="font-size:0.575em;padding:8px 14px">BACK</button></div>
+  <div class="coll-section"><div class="coll-section-title" style="color:var(--r-regular);border-color:var(--r-regular)">REGULAR - Basic Jobs</div><div class="coll-grid" id="gridRegular"></div></div>
+  <div class="coll-section"><div class="coll-section-title" style="color:var(--r-elite);border-color:var(--r-elite)">ELITE - Advanced Jobs</div><div class="coll-grid" id="gridElite"></div></div>
+  <div class="coll-section"><div class="coll-section-title" style="color:var(--r-epic);border-color:var(--r-epic)">EPIC - Legendary Jobs</div><div class="coll-grid" id="gridEpic"></div></div>
+  <div class="coll-section"><div class="coll-section-title" style="color:var(--r-legendary);border-color:var(--r-legendary)">LEGENDARY - Side Characters</div><div class="coll-grid" id="gridLegendary"></div></div>
+<div class="coll-section"><div class="coll-section-title" style="color:var(--r-rainbow);border-color:var(--r-rainbow)">UNIQUE - Main Characters</div><div class="coll-grid" id="gridRainbow"></div></div>
+</div>
+<div id="towerSelectScreen" class="screen">
+  <div class="tower-header">
+    <div class="tower-title">ENDLESS TOWER</div>
+    <div class="tower-floor" id="towerFloorDisplay">Floor 1</div>
+    <button class="btn btn-s" id="towerBackBtn" style="font-size:0.575em;padding:8px 14px">BACK</button>
+  </div>
+  <div class="tower-team-select">
+    <div style="font-size:0.575em;color:var(--p);margin-bottom:10px">SELECT YOUR PARTY (Pick 3 heroes from your collection)</div>
+    <div class="tower-party-display" id="towerPartyDisplay"></div>
+    <div class="tower-team-grid" id="towerTeamGrid"></div>
+    <div style="text-align:center;margin-top:10px"><button class="btn btn-g" id="towerStartBtn" style="font-size:0.575em;padding:10px 30px">ENTER TOWER</button></div>
+  </div>
+</div>
+<div id="towerBattleScreen" class="screen">
+  <div class="tower-header">
+    <div class="tower-title">ENDLESS TOWER</div>
+    <div class="tower-floor" id="battleFloorDisplay">Floor 1</div>
+    <button class="btn btn-s" id="towerFleeBtn" style="font-size:0.575em;padding:8px 14px">FLEE</button>
+  </div>
+  <div class="floor-indicator" id="floorIndicator"></div>
+  <div class="battle-arena" id="battleArena"></div>
+  <div class="battle-log" id="battleLog"></div>
+  <div class="battle-actions" id="battleActions"></div>
+</div>
+<div class="modal-overlay" id="prizeModal">
+  <div class="prize-canvas-wrap"><canvas id="prizeCanvas" width="80" height="80"></canvas><div class="prize-name" id="prizeName"></div><div class="prize-rarity" id="prizeRarity"></div><div class="prize-new" id="prizeNew"></div><div class="prize-dupe" id="prizeDupe"></div><div class="prize-refund" id="prizeRefund"></div></div>
+  <div class="multi-results" id="multiResults"></div>
+  <button class="btn btn-g" id="closePrizeBtn">CONTINUE</button>
+</div>
+  <script src="js/part1.js"></script>
+  <script src="js/part2.js"></script>
+  <script src="js/part3.js"></script>
+  <script src="js/part4.js"></script>
+  <script src="js/part5.js"></script>
+  <script src="js/part6.js"></script>
+  <script src="js/part7.js"></script>
+  <script src="js/part8.js"></script>
+  <script src="js/part9.js"></script>
+  <script src="js/part10.js"></script>
+  <script src="js/part11.js"></script>
+  <script src="js/part12.js"></script>
+  <script src="js/part13.js"></script>
+</body>
+</html>
