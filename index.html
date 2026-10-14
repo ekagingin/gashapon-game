@@ -69,14 +69,25 @@
   <script>
   (function(){
     var NPARTS=13;
-    var code='';
-    var done=0;
-    function fail(){var d=document.createElement('div');d.style.cssText='position:fixed;inset:0;background:#000;color:#f66;font:16px monospace;display:flex;align-items:center;justify-content:center;z-index:9999';d.textContent='Failed to load game resources. Please refresh.';document.body.appendChild(d);}
-    for(var i=1;i<=NPARTS;i++){
-      (function(n){
-        fetch('js/part'+n+'.js',{cache:'no-cache'}).then(function(r){if(!r.ok)throw 0;return r.text();}).then(function(t){code+=t;done++;if(done===NPARTS){try{(0,eval)(code);}catch(e){document.title='JS error: '+e.message;fail();}}}).catch(fail);
-      })(i);
+    function fail(msg){var d=document.createElement('div');d.style.cssText='position:fixed;inset:0;background:#000;color:#f66;font:12px monospace;padding:20px;overflow:auto;z-index:9999;white-space:pre-wrap';d.textContent='LOAD ERROR\n'+msg;document.body.appendChild(d);}
+    var code='';var n=1;
+    function next(){
+      if(n>NPARTS){
+        try{(0,eval)(code);}
+        catch(e){fail('EVAL ERROR: '+(e&&e.stack?e.stack:e));}
+        return;
+      }
+      var attempt=0;
+      function go(){
+        fetch('js/part'+n+'.js?v='+Date.now()).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();}).then(function(t){code+=t;n++;next();}).catch(function(e){
+          attempt++;
+          if(attempt<3){setTimeout(go,800*attempt);}
+          else{fail('FETCH js/part'+n+'.js failed after 3 tries: '+e);}
+        });
+      }
+      go();
     }
+    next();
   })();
   </script>
 </body>
