@@ -1,0 +1,89 @@
+if(move.e.indexOf('haste')>=0){t.buffs.haste=3;logMsg(t.hero.name+' Hasted!','log-info');}
+});
+}else if(move.t==='flee'){logMsg('Fled the battle!','log-info');endBattle(false);return;}
+towerState.enemies.forEach(function(en){if(en.hp<=0){en.hp=0;en.alive=false;logMsg(en.name+' defeated!','log-win');}});
+if(towerState.enemies.filter(function(en){return en.alive;}).length===0){endBattle(true);return;}
+if(!towerState.enemies[towerState.targetEnemyIdx]||!towerState.enemies[towerState.targetEnemyIdx].alive){for(var ei=0;ei<towerState.enemies.length;ei++){if(towerState.enemies[ei].alive){towerState.targetEnemyIdx=ei;break;}}}
+checkDeadParty();if(towerState.phase==='player'){
+u.acted=true;towerState.activeIdx=-1;towerState.selectedMove=null;towerState.targetMode=null;towerState.targetAllyIdx=0;
+var avail=towerState.party.filter(function(p){return p.alive&&!p.acted;});
+if(avail.length===0){startEnemyPhase();}else{renderBattle();}
+}}
+function checkDeadParty(){towerState.party.forEach(function(u){if(u.hp<=0){u.hp=0;u.alive=false;}});if(towerState.party.filter(function(u){return u.alive;}).length===0)endBattle(false);}
+function startEnemyPhase(){
+if(towerState.battleOver)return;
+towerState.phase='enemy';towerState.activeIdx=0;renderBattle();enemyTurnTimer=setTimeout(enemyTurn,800);}
+function enemyTurn(){
+enemyTurnTimer=null;
+if(towerState.battleOver)return;
+var aliveP=towerState.party.filter(function(u){return u.alive;});
+if(aliveP.length===0){endBattle(false);return;}
+towerState.enemies.forEach(function(e){
+if(!e.alive)return;
+var alive=aliveP;
+var move=e.moves[Math.floor(Math.random()*e.moves.length)];var effPAtk=e.patk*(e.buffs.atk>0?1.3:1);var effMAtk=e.matk*(e.buffs.atk>0?1.3:1);
+if(move.t==='phys'){
+if(move.e==='all'){alive.forEach(function(u){var d=calcDamage(effPAtk,u.pdef,move.pwr,u.pres,typeEff('phys',u.type)*1.05);u.hp-=d;logMsg(e.name+' uses '+move.n+'! '+u.hero.name+' -'+d+'!','log-dmg');});}
+else{var tgt=alive[Math.floor(Math.random()*alive.length)];var d=calcDamage(effPAtk,tgt.pdef,move.pwr,tgt.pres,typeEff('phys',tgt.type)*1.05);tgt.hp-=d;logMsg(e.name+' uses '+move.n+'! '+tgt.hero.name+' -'+d+'!','log-dmg');}
+}else if(move.t==='magic'){
+if(move.e==='all'){alive.forEach(function(u){var d=calcDamage(effMAtk,u.mdef,move.pwr,u.mres,typeEff('magic',u.type)*1.05);u.hp-=d;logMsg(e.name+' casts '+move.n+'! '+u.hero.name+' -'+d+'!','log-dmg');});}
+else{var tgt=alive[Math.floor(Math.random()*alive.length)];var d=calcDamage(effMAtk,tgt.mdef,move.pwr,tgt.mres,typeEff('magic',tgt.type)*1.05);tgt.hp-=d;logMsg(e.name+' casts '+move.n+'! '+tgt.hero.name+' -'+d+'!','log-dmg');}
+}else if(move.t==='buff'){if(move.e.indexOf('atk')>=0){e.buffs.atk=2;logMsg(e.name+' uses '+move.n+'! ATK raised!','log-info');}
+}else if(move.t==='debuff'){alive.forEach(function(u){u.buffs.atk=0;});logMsg(e.name+' uses '+move.n+'! Party ATK lowered!','log-dmg');}
+});
+checkDeadParty();
+if(towerState.party.filter(function(u){return u.alive;}).length===0)return;
+towerState.phase='player';towerState.activeIdx=-1;
+towerState.party.forEach(function(p){p.acted=false;});
+towerState.selectedMove=null;renderBattle();}
+function endBattle(victory){
+if(towerState.battleOver)return;
+if(enemyTurnTimer){clearTimeout(enemyTurnTimer);enemyTurnTimer=null;}
+towerState.battleOver=true;
+towerState.party.forEach(function(u){if(!u.alive&&state.towerDead.indexOf(u.hero.id)<0)state.towerDead.push(u.hero.id);});
+saveState();
+var act=document.getElementById('battleActions');act.innerHTML='';
+if(victory){
+var reward=getFloorReward(towerState.floor);state.coins+=reward;towerState.rewards+=reward;
+state.towerFloor=towerState.floor+1;if(state.towerFloor>TOWER_FLOORS)state.towerFloor=TOWER_FLOORS;
+logMsg('VICTORY! Floor '+towerState.floor+' cleared!','log-win');logMsg('+'+reward+' coins!','log-win');
+saveState();updateHUD();renderFloorIndicator();
+var arena=document.getElementById('battleArena');var isLast=towerState.floor>=TOWER_FLOORS;
+var v=document.createElement('div');v.className='battle-victory';
+v.innerHTML='<div class="bv-floor">FLOOR '+towerState.floor+' CLEARED!</div><div class="bv-reward">+'+reward+' coins</div>';
+if(!isLast){
+var nb=document.createElement('button');nb.className='btn btn-g';nb.style.fontSize='0.5em';nb.style.padding='10px 30px';
+var nf=towerState.floor+1;nb.textContent='NEXT FLOOR '+nf+(nf%5===0?' - BOSS':'');
+nb.onclick=function(){towerState.floor++;state.towerFloor=towerState.floor;towerState.party.forEach(function(u){if(u.alive){u.buffs={atk:0,def:0};}});saveState();enterTowerFloor();};
+v.appendChild(nb);
+var eb=document.createElement('button');eb.className='btn btn-s';eb.style.fontSize='0.5em';eb.style.padding='10px 20px';eb.textContent='EXIT';eb.onclick=function(){showScreen('gameScreen');};v.appendChild(eb);
+}else{
+var tc=document.createElement('div');tc.className='tower-complete';
+tc.innerHTML='<div class="tc-title">TOWER CONQUERED!</div><div class="tc-reward">Total: '+towerState.rewards+' coins</div>';
+state.towerDead=[];state.towerFloor=1;saveState();
+var rb=document.createElement('button');rb.className='btn btn-g';rb.style.fontSize='0.5em';rb.style.padding='10px 30px';rb.textContent='RETURN';rb.onclick=function(){showScreen('gameScreen');};tc.appendChild(rb);v.appendChild(tc);
+}
+arena.innerHTML='';arena.appendChild(v);
+}else{
+logMsg('DEFEATED on Floor '+towerState.floor,'log-dmg');state.towerDead=[];state.towerFloor=1;saveState();
+var arena=document.getElementById('battleArena');
+var d=document.createElement('div');d.className='battle-victory';
+d.innerHTML='<div class="bv-floor" style="color:var(--s)">DEFEATED - Floor '+towerState.floor+'</div><div class="bv-reward">Earned '+towerState.rewards+' coins total</div>';
+var rb=document.createElement('button');rb.className='btn btn-s';rb.style.fontSize='0.5em';rb.style.padding='10px 30px';rb.textContent='RETURN';rb.onclick=function(){showScreen('gameScreen');};d.appendChild(rb);
+arena.innerHTML='';arena.appendChild(d);
+}}
+function saveState(){try{localStorage.setItem('capsuleQuest',JSON.stringify(state));}catch(e){}}
+function loadState(){try{var s=localStorage.getItem('capsuleQuest');if(s){var l=JSON.parse(s);state=Object.assign(state,l);if(!state.towerDead)state.towerDead=[];if(!state.towerFloor)state.towerFloor=1;return true;}}catch(e){}return false;}
+function resetGame(){if(!confirm('Reset all progress? This cannot be undone.'))return;localStorage.removeItem('capsuleQuest');state={playerName:'',coins:1000,collection:{},pityEpic:0,pityLegendary:0,totalPulls:0,towerFloor:1,towerDead:[]};towerState={floor:1,party:[],enemies:[],turn:0,activeIdx:0,phase:'select',selectedMove:null,targetIdx:0,targetEnemyIdx:0,targetAllyIdx:0,targetMode:null,log:[],rewards:0,battleOver:false};showScreen('titleScreen');}
+document.getElementById('startBtn').addEventListener('click',function(){initAudio();var name=document.getElementById('nameInput').value.trim()||'HERO';state.playerName=name;saveState();updateHUD();initGlobeCapsules();showScreen('gameScreen');sfxCoin();});
+document.getElementById('pull1Btn').addEventListener('click',function(){doPullAnimation(1);});
+document.getElementById('pull10Btn').addEventListener('click',function(){doPullAnimation(10);});
+document.getElementById('collBtn').addEventListener('click',function(){renderCollection();showScreen('collectionScreen');});
+document.getElementById('backBtn').addEventListener('click',function(){showScreen('gameScreen');});
+document.getElementById('resetBtn').addEventListener('click',resetGame);
+document.getElementById('towerBtn').addEventListener('click',startTower);
+document.getElementById('towerBackBtn').addEventListener('click',function(){showScreen('gameScreen');});
+document.getElementById('towerStartBtn').addEventListener('click',enterTowerFloor);
+document.getElementById('towerFleeBtn').addEventListener('click',function(){state.towerFloor=towerState.floor;saveState();showScreen('gameScreen');});
+document.getElementById('closePrizeBtn').addEventListener('click',function(){document.getElementById('prizeModal').classList.remove('show');document.getElementById('prizeCanvas').style.display='block';document.getElementById('multiResults').innerHTML='';document.getElementById('multiResults').style.display='none';document.querySelectorAll('.particle').forEach(function(p){p.remove();});});
+(function init(){if(loadState()&&state.playerName){updateHUD();initGlobeCapsules();showScreen('gameScreen');}else if(state.playerName){document.getElementById('nameInput').value=state.playerName;}})();
