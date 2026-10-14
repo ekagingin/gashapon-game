@@ -66,18 +66,18 @@
   <div class="multi-results" id="multiResults"></div>
   <button class="btn btn-g" id="closePrizeBtn">CONTINUE</button>
 </div>
-  <script src="js/part1.js"></script>
-  <script src="js/part2.js"></script>
-  <script src="js/part3.js"></script>
-  <script src="js/part4.js"></script>
-  <script src="js/part5.js"></script>
-  <script src="js/part6.js"></script>
-  <script src="js/part7.js"></script>
-  <script src="js/part8.js"></script>
-  <script src="js/part9.js"></script>
-  <script src="js/part10.js"></script>
-  <script src="js/part11.js"></script>
-  <script src="js/part12.js"></script>
-  <script src="js/part13.js"></script>
+  <script>
+  (function(){
+    var NPARTS=13;
+    var code='';
+    var done=0;
+    function fail(){var d=document.createElement('div');d.style.cssText='position:fixed;inset:0;background:#000;color:#f66;font:16px monospace;display:flex;align-items:center;justify-content:center;z-index:9999';d.textContent='Failed to load game resources. Please refresh.';document.body.appendChild(d);}
+    for(var i=1;i<=NPARTS;i++){
+      (function(n){
+        fetch('js/part'+n+'.js',{cache:'no-cache'}).then(function(r){if(!r.ok)throw 0;return r.text();}).then(function(t){code+=t;done++;if(done===NPARTS){try{(0,eval)(code);}catch(e){document.title='JS error: '+e.message;fail();}}}).catch(fail);
+      })(i);
+    }
+  })();
+  </script>
 </body>
 </html>
